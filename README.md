@@ -1,55 +1,45 @@
-# Vision Upload — Fashion Classifier
+# Vision Upload: Fashion Classifier
 
-Hey there! Welcome to **Vision Upload**, a fast and sleek web application that uses Machine Learning to identify items of clothing. 
+Drop an image of a clothing item and get its category back. A scikit-learn pipeline trained on Fashion-MNIST runs behind a FastAPI endpoint with a drag-and-drop web page.
 
-Just drop an image of a clothing item (like a shirt, sneaker, or bag), and the app will instantly tell you what it is using a custom-trained model based on the famous **Fashion-MNIST** dataset.
+![alt text](<Screenshot 2026-09-30 141801.png>)
 
-## Features
+## Model
 
-- **Instant Classification**: Get real-time predictions for 10 different clothing categories.
-- **Sleek Interface**: A stunning, responsive, dark-mode-first glassmorphism UI built with plain HTML/CSS/JS (no heavy frontend frameworks required!).
-- **Drag & Drop**: Seamlessly upload images by dragging them right onto the page.
-- **FastAPI Backend**: A lightning-fast Python backend serving the ML model and frontend.
+- **Dataset:** [Fashion-MNIST](https://github.com/zalandoresearch/fashion-mnist), 70,000 grayscale 28x28 images, 10 classes
+- **Approach:** scikit-learn pipeline saved with `joblib`
+- **Test accuracy:** TODO
+- **Classes:** T-shirt/top, Trouser, Pullover, Dress, Coat, Sandal, Shirt, Sneaker, Bag, Ankle boot
 
-## Getting Started
 
-Want to run this locally? It's super easy.
+## How it works
 
-### Prerequisites
+1. The page sends the dropped image to `POST /predict`.
+2. FastAPI uses Pillow to convert it to grayscale, invert the colors, and resize it to 28x28 so it matches the training data.
+3. The flattened pixels go through the saved pipeline, which predicts the class.
+4. The label is returned and shown in the UI.
 
-Make sure you have Python installed, along with the required libraries:
-- `fastapi`
-- `uvicorn`
-- `joblib`
-- `Pillow`
-- `numpy`
-- `scikit-learn` (for the pipeline)
+## Known limitation
 
-You can install them via pip:
+The model is trained on clean Fashion-MNIST images, so real photos with busy backgrounds can be misclassified. A CNN with data augmentation would handle this better.
+
+## Run locally
+
 ```bash
-pip install fastapi uvicorn joblib Pillow numpy scikit-learn python-multipart
+git clone https://github.com/varun-aahil/vision-upload-service.git
+cd vision-upload-service
+pip install -r requirements.txt
+uvicorn main:app --reload
 ```
 
-### Running the App
+Open http://127.0.0.1:8000 and drop an image.
 
-1. Clone this repository (or download the files).
-2. Open your terminal in the project folder.
-3. Start the server using uvicorn:
-   ```bash
-   uvicorn main:app --reload
-   ```
-4. Open your browser and head over to `http://127.0.0.1:8000`.
-5. Drop an image and see the magic happen! ✨
+## Tech stack
 
-## How it Works
+Python, scikit-learn, FastAPI, Pillow, NumPy, joblib, vanilla HTML/CSS/JS
 
-1. **Frontend**: The user drops an image onto the glowing drop zone. The image is previewed locally and then sent to the backend via a POST request to `/predict`.
-2. **Backend**: FastAPI receives the image. We use `Pillow` to convert it to grayscale, invert the colors, and resize it to 28x28 pixels to match the format the model was trained on.
-3. **Model**: The processed image is flattened and passed into a pre-trained `joblib` model (a scikit-learn pipeline) which predicts the category.
-4. **Result**: The result is sent back to the frontend and displayed with a satisfying animation!
+## Next steps
 
-## Categories Supported
-
-The model can recognize the following Fashion-MNIST categories:
-T-shirt/top, Trouser, Pullover, Dress, Coat, Sandal, Shirt, Sneaker, Bag, Ankle boot.
-
+- Retrain as a small CNN in PyTorch and compare it against this pipeline
+- Add confidence scores and the top 3 predictions to the response
+- Add tests for the preprocessing step
